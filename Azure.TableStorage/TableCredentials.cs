@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http.Headers;
 
 namespace Azure.TableStorage
@@ -10,10 +9,10 @@ namespace Azure.TableStorage
 
         private readonly byte[] _key;
 
-        internal TableCredentials(Dictionary<string, string> settings)
+        internal TableCredentials(TableConnectionEntry entry)
         {
-            _accountName = settings[Constants.AccountName];
-            _key = Convert.FromBase64String(settings[Constants.AccountKey]);
+            _accountName = entry.AccountName;
+            _key = Convert.FromBase64String(entry.AccountKey);
         }
 
         internal AuthenticationHeaderValue AuthorizationHeader(string timeString, string tableUri)

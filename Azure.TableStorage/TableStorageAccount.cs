@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Azure.TableStorage.Http;
-
-namespace Azure.TableStorage
+﻿namespace Azure.TableStorage
 {
+    using System;
+    using Http;
+
     internal sealed class TableStorageAccount
     {
         private readonly TableCredentials _tableCredentials;
@@ -23,27 +22,42 @@ namespace Azure.TableStorage
 
         internal static TableStorageAccount Parse(string connectionString)
         {
-            var settings = ParseInternal(connectionString);
+            var entry = ParseConnectionString(connectionString);
 
-            return new TableStorageAccount(new TableCredentials(settings), new TableStorageUri(settings[Constants.AccountName], settings[Constants.EndpointSuffix]), new HttpClientFactory());
+            return new TableStorageAccount(new TableCredentials(entry), new TableStorageUri(entry.AccountName, entry.EndpointSuffix), new HttpClientFactory());
         }
 
         internal TableClient CreateTableClient() => new TableClient(_tableCredentials, _tableStorageUri, _http);
 
-        private static Dictionary<string, string> ParseInternal(string connectionString)
+        private static TableConnectionEntry ParseConnectionString(string connectionString)
         {
             var split = connectionString.Split(new char[1] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var dictionary = new Dictionary<string, string>(split.Length, StringComparer.OrdinalIgnoreCase);
+            var entry = new TableConnectionEntry();
 
             for (var i = 0; i < split.Length; i++)
             {
                 var nvp = split[i].Split(new char[1] { '=' }, 2, StringSplitOptions.RemoveEmptyEntries);
 
-                if (nvp.Length > 1 && !dictionary.ContainsKey(nvp[0])) dictionary.Add(nvp[0], nvp[1]);
+                if (nvp.Length == 0) continue;
+
+                switch (nvp[0])
+                {
+                    case nameof(entry.AccountKey):
+                        entry.AccountKey = nvp[1];
+                        break;
+
+                    case nameof(entry.AccountName):
+                        entry.AccountName = nvp[1];
+                        break;
+
+                    case nameof(entry.EndpointSuffix):
+                        entry.EndpointSuffix = nvp[1];
+                        break;
+                }
             }
 
-            return dictionary;
+            return entry;
         }
     }
 }
