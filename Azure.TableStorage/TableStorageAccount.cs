@@ -1,33 +1,30 @@
-﻿namespace Azure.TableStorage
-{
-    using System;
-    using Http;
+﻿using System;
 
-    internal sealed class TableStorageAccount
+namespace Azure.TableStorage
+{
+    public sealed class TableStorageAccount
     {
         private readonly TableCredentials _tableCredentials;
 
         private readonly TableStorageUri _tableStorageUri;
 
-        private readonly HttpClientFactory _http;
-
-        internal TableStorageAccount(TableCredentials credentials, TableStorageUri tableStorageUri, HttpClientFactory http)
+        internal TableStorageAccount(TableCredentials credentials, TableStorageUri tableStorageUri)
         {
             _tableCredentials = credentials;
 
             _tableStorageUri = tableStorageUri;
-
-            _http = http;
         }
 
-        internal static TableStorageAccount Parse(string connectionString)
+        public static TableStorageAccount Parse(string connectionString)
         {
+            if(string.IsNullOrEmpty(connectionString)) ThrowHelper.Throw("Connection string is missing");
+
             var entry = ParseConnectionString(connectionString);
 
-            return new TableStorageAccount(new TableCredentials(entry), new TableStorageUri(entry.AccountName, entry.EndpointSuffix), new HttpClientFactory());
+            return new TableStorageAccount(new TableCredentials(entry), new TableStorageUri(entry.AccountName, entry.EndpointSuffix));
         }
 
-        internal TableClient CreateTableClient() => new TableClient(_tableCredentials, _tableStorageUri, _http);
+        public TableClient CreateTableClient() => new TableClient(_tableCredentials, _tableStorageUri);
 
         private static TableConnectionEntry ParseConnectionString(string connectionString)
         {

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Globalization;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure.TableStorage.Extensions;
 using Azure.TableStorage.Http;
 
 namespace Azure.TableStorage
 {
     internal sealed class TableOperation
     {
-        private readonly TableOperationType _tableOperationType;
+        private readonly TableOperationType _operationType;
 
-        private readonly TableEntity _tableEntity;
+        private readonly ITableEntity _entity;
 
         private readonly TableUri _tableUri;
 
@@ -18,7 +20,7 @@ namespace Azure.TableStorage
         {
             get
             {
-                switch (_tableOperationType)
+                switch (_operationType)
                 {
                     case TableOperationType.Insert: return HttpMethod.Post;
                     case TableOperationType.Delete: return HttpMethod.Delete;
@@ -29,16 +31,21 @@ namespace Azure.TableStorage
             }
         }
 
-        internal TableOperation(TableEntity entity, TableOperationType tableOperationType)
+        internal TableOperation(ITableEntity entity, TableOperationType tableOperationType) : this(entity,
+            tableOperationType, default, default)
         {
-            _tableEntity = entity;
-
-            _tableOperationType = tableOperationType;
-
-            _tableUri = new TableUri(entity, tableOperationType);
         }
 
-        internal async Task<TableResult<T>> ExecuteAsync<T>(TableCredentials credentials, TableStorageUri storageUri, HttpClientFactory http) where T : TableEntity
+        internal TableOperation(ITableEntity entity, TableOperationType operationType, TablePaginationToken token, TableQueryOptions options)
+        {
+            _entity = entity;
+
+            _operationType = operationType;
+
+            _tableUri = new TableUri(entity, operationType, TableUriQueryBuilder.Build(token, options));
+        }
+
+        internal async Task<TableResult<T>> ExecuteAsync<T>(TableCredentials credentials, TableStorageUri storageUri)
         {
             var timeString = DateTimeOffset.UtcNow.UtcDateTime.ToString("R", CultureInfo.InvariantCulture);
 
@@ -46,24 +53,41 @@ namespace Azure.TableStorage
             {
                 request.Headers.Add("x-ms-date", timeString);
 
-                request.Headers.Authorization = credentials.AuthorizationHeader(timeString, _tableUri.Uri);
+                request.Headers.Authorization = credentials.AuthorizationHeader(timeString, _tableUri.Url);
 
-                using (var response = await http.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, new System.Threading.CancellationToken()).ConfigureAwait(false))
+                if (_operationType == TableOperationType.Insert || _operationType == TableOperationType.Update)
+                {
+                    request.Headers.Add("Prefer", "return-no-content");
+                    request.Content = _entity.Serialize();
+                }
+
+                if(_operationType == TableOperationType.Update || _operationType == TableOperationType.Delete)
+                    request.Headers.Add("If-Match", "*");
+
+                using (var response = await HttpClientFactory.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,
+                    new CancellationToken()).ConfigureAwait(false))
                 {
                     using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                     {
-                        return _tableEntity.DeSerialize<T>(stream, response.StatusCode);
+                        if (!response.IsSuccessStatusCode) ThrowHelper.Throw(await stream.AsString(), response.StatusCode);
+
+                        if (_operationType == TableOperationType.Get)
+                        {
+                            return _entity.DeSerialize<T>(stream, response.StatusCode, response.Headers);
+                        }
+
+                        return new TableResult<T>(response.StatusCode);
                     }
                 }
             }
         }
 
-        internal static TableOperation Insert(TableEntity entity) => new TableOperation(entity, TableOperationType.Insert);
+        internal static TableOperation Insert(ITableEntity entity) => new TableOperation(entity, TableOperationType.Insert);
 
-        internal static TableOperation Get(TableEntity entity) => new TableOperation(entity, TableOperationType.Get);
+        internal static TableOperation Get(ITableEntity entity, TableQueryOptions options = null, TablePaginationToken token = null) => new TableOperation(entity, TableOperationType.Get, token, options);
 
-        internal static TableOperation Update(TableEntity entity) => new TableOperation(entity, TableOperationType.Update);
+        internal static TableOperation Update(ITableEntity entity) => new TableOperation(entity, TableOperationType.Update);
 
-        internal static TableOperation Delete(TableEntity entity) => new TableOperation(entity, TableOperationType.Delete);
+        internal static TableOperation Delete(ITableEntity entity) => new TableOperation(entity, TableOperationType.Delete);
     }
 }

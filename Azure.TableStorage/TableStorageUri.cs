@@ -11,6 +11,11 @@ namespace Azure.TableStorage
             _primmaryUri = new Uri("https://" + accountName + ".table." + endPointSuffix + "/");
         }
 
-        internal Uri BuildRequestUri(TableUri uri) => new Uri(_primmaryUri + uri.Uri + uri.Filter);
+        internal Uri BuildRequestUri(TableUri uri)
+        {
+            if (uri.Filter == null) return new Uri(_primmaryUri + uri.Url);
+
+            return new Uri(_primmaryUri + uri.Url + uri.Filter);
+        }
     }
 }
