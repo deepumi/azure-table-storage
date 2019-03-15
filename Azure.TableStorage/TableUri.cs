@@ -2,20 +2,22 @@
 {
     internal sealed class TableUri
     {
-        internal string Filter { get; } = string.Empty;
+        internal string Filter { get; }
 
-        internal string Uri { get; }
+        internal string Url { get; }
 
-        internal TableUri(TableEntity entity, TableOperationType tableOperation)
+        internal TableUri(ITableEntity entity, TableOperationType operationType, string filter)
         {
-            Uri = tableOperation == TableOperationType.Insert ? 
-                                    entity.TableName : 
-                                    $"{entity.TableName}(PartitionKey='{entity.PartitionKey}',RowKey='{entity.RowKey}')";
-
-            if (!string.IsNullOrEmpty(entity.SelectedProperties) && tableOperation == TableOperationType.Get)
+            if (operationType != TableOperationType.Insert && !string.IsNullOrEmpty(entity.PartitionKey) && !string.IsNullOrEmpty(entity.RowKey))
             {
-                Filter = "?$select=" + entity.SelectedProperties;
+                Url = $"{entity.TableName}(PartitionKey='{entity.PartitionKey}',RowKey='{entity.RowKey}')";
             }
+            else
+            {
+                Url = entity.TableName;//+ "()";
+            }
+
+            Filter = filter;
         }
     }
 }

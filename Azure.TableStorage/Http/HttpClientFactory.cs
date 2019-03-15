@@ -3,24 +3,17 @@ using System.Threading;
 
 namespace Azure.TableStorage.Http
 {
-    internal sealed class HttpClientFactory /*: IHttpClientFactory*/
+    internal static class HttpClientFactory
     {
-        private static readonly HttpClient _client = new HttpClient(new RetryHandler(), false);
+        internal static readonly HttpClient Client =
+            new HttpClient(new HttpRetryHandler(), false) { Timeout = Timeout.InfiniteTimeSpan };
 
         static HttpClientFactory()
         {
-            //set base URL
-            _client.DefaultRequestHeaders.ExpectContinue = false;
-            _client.DefaultRequestHeaders.Add("x-ms-version", Constants.MsVersion);
-            _client.DefaultRequestHeaders.Add("Accept-Charset", Constants.Utf8);
-            _client.DefaultRequestHeaders.Add("Accept", Constants.Accept);
-            _client.Timeout = Timeout.InfiniteTimeSpan;
-
-            //per URL
-            //_client.DefaultRequestHeaders.ConnectionClose = false;
-            // ServicePointManager.FindServicePoint(new Uri("")).ConnectionLeaseTimeout = 60 * 1000;
+            Client.DefaultRequestHeaders.ExpectContinue = false;
+            Client.DefaultRequestHeaders.Add("x-ms-version", TableConstants.MsVersion);
+            Client.DefaultRequestHeaders.Add("Accept-Charset", TableConstants.Utf8);
+            Client.DefaultRequestHeaders.Add("Accept", TableConstants.Accept);
         }
-
-        internal HttpClient Client => _client;
     }
 }

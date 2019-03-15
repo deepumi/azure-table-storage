@@ -1,23 +1,20 @@
 ﻿using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Azure.TableStorage
 {
-    public abstract class TableEntity
+    public interface ITableEntity
     {
-        public abstract string PartitionKey { get; set; }
+        string PartitionKey { get; set; }
 
-        public abstract string RowKey { get; set; }
+        string RowKey { get; set; }
 
-        internal abstract string TableName { get; }
+        HttpContent Serialize();
 
-        internal virtual string SelectedProperties { get; set; }
+        TableResult<TResult> DeSerialize<TResult>(Stream stream, HttpStatusCode statusCode, HttpResponseHeaders headers);
 
-        protected TableEntity() { }
-
-        public virtual HttpContent Serialize<T>(T value) => default;
-      
-        public virtual TableResult<T> DeSerialize<T>(Stream stream, HttpStatusCode statusCode) where T : TableEntity => default;
+        string TableName { get; }
     }
 }

@@ -18,10 +18,14 @@ namespace Azure.TableStorage.Http
             return _attempt < MaxAttempt;
         }
 
-        internal bool IsMaxAttempt => _attempt >= MaxAttempt || !ConitnueDelay();
-
         internal async Task Delay(CancellationToken token)
         {
+            if (_attempt >= MaxAttempt || !ConitnueDelay())
+            {
+                _attempt++;
+                return;
+            }
+
             if (ConitnueDelay()) await Task.Delay(_sleepTime, token);
 
             _attempt++;
