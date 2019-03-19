@@ -1,47 +1,53 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
 namespace Azure.TableStorage
 {
     internal static class TableUriQueryBuilder
     {
+        private const string Quote = "?";
+
         internal static string Build(TablePaginationToken token, TableQueryOptions options)
         {
             if (token == null && options == null) return null;
 
-            var items = new List<string>(5);
+            var result = Quote;
 
             if (token != null)
             {
-                items.Add("NextPartitionKey=" + Uri.EscapeDataString(token.NextPartitionKey));
-                items.Add("NextRowKey=" + Uri.EscapeDataString(token.NextRowKey));
+                result += "NextPartitionKey=" + Uri.EscapeDataString(token.NextPartitionKey) + "&NextRowKey=" + Uri.EscapeDataString(token.NextRowKey);
             }
 
-            if (options != null)
+            if (options == null) return result;
+
+            if (options.Top > 0)
             {
-                if (options.Top > 0) items.Add("$top=" + options.Top.ToString(CultureInfo.InvariantCulture));
-
-                if (!string.IsNullOrEmpty(options.SelectProperties)) items.Add("$select=" + options.SelectProperties);
-
-                if (!string.IsNullOrEmpty(options.Filter)) items.Add("$filter=" + options.Filter);
+                result = Result(result);
+                result += "$top=" + options.Top.ToString(CultureInfo.InvariantCulture);
             }
 
-            var count = items.Count;
-
-            if (count == 0) return null;
-
-            var builder = new StringBuilder("?");
-
-            for (var i = 0; i < count; i++)
+            if (!string.IsNullOrEmpty(options.SelectProperties))
             {
-                builder.Append(items[i]);
-
-                if (i != count - 1) builder.Append("&");
+                result = Result(result);
+                result += "$select=" + options.SelectProperties;
             }
 
-            return builder.ToString();
+            if (!string.IsNullOrEmpty(options.Filter))
+            {
+                result = Result(result);
+                result +="$filter=" + options.Filter;
+            }
+
+            string Result(string s)
+            {
+                if (s.IndexOf('?') == -1)
+                    s += Quote;
+                else
+                    s += "&";
+                return s;
+            }
+
+            return result;
         }
     }
 }

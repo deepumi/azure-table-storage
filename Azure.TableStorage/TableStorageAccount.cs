@@ -53,7 +53,6 @@ namespace Azure.TableStorage
                         break;
                 }
             }
-
             return entry;
         }
     }

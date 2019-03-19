@@ -7,10 +7,8 @@ namespace Azure.TableStorage
     {
         public HttpStatusCode StatusCode { get; }
 
-        public TableExceptionMessage(string message) : base(message)
-        {
-        }
-
+        public TableExceptionMessage(string message) : base(message) { }
+     
         public TableExceptionMessage(string message, HttpStatusCode statusCode) : base(message)
         {
             StatusCode = statusCode;

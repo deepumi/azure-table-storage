@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.TableStorage.Extensions;
@@ -22,19 +23,16 @@ namespace Azure.TableStorage
             {
                 switch (_operationType)
                 {
+                    case TableOperationType.Get: return HttpMethod.Get;
                     case TableOperationType.Insert: return HttpMethod.Post;
                     case TableOperationType.Delete: return HttpMethod.Delete;
-                    case TableOperationType.Get: return HttpMethod.Get;
                     case TableOperationType.Update: return HttpMethod.Put;
                     default: return HttpMethod.Get;
                 }
             }
         }
 
-        internal TableOperation(ITableEntity entity, TableOperationType tableOperationType) : this(entity,
-            tableOperationType, default, default)
-        {
-        }
+        internal TableOperation(ITableEntity entity, TableOperationType operationType) : this(entity, operationType, default, default) { }
 
         internal TableOperation(ITableEntity entity, TableOperationType operationType, TablePaginationToken token, TableQueryOptions options)
         {
@@ -45,41 +43,23 @@ namespace Azure.TableStorage
             _tableUri = new TableUri(entity, operationType, TableUriQueryBuilder.Build(token, options));
         }
 
-        internal async Task<TableResult<T>> ExecuteAsync<T>(TableCredentials credentials, TableStorageUri storageUri)
+        internal async Task<TableResult<T>> ExecuteAsync<T>(TableCredentials credentials, TableStorageUri storageUri) where T : class
         {
-            var timeString = DateTimeOffset.UtcNow.UtcDateTime.ToString("R", CultureInfo.InvariantCulture);
+            var result = await ExecuteAsyncInternal(credentials, storageUri);
 
-            using (var request = new HttpRequestMessage(HttpMethod, storageUri.BuildRequestUri(_tableUri)))
+            if (_operationType == TableOperationType.Get)
             {
-                request.Headers.Add("x-ms-date", timeString);
-
-                request.Headers.Authorization = credentials.AuthorizationHeader(timeString, _tableUri.Url);
-
-                if (_operationType == TableOperationType.Insert || _operationType == TableOperationType.Update)
-                {
-                    request.Headers.Add("Prefer", "return-no-content");
-                    request.Content = _entity.Serialize();
-                }
-
-                if(_operationType == TableOperationType.Update || _operationType == TableOperationType.Delete)
-                    request.Headers.Add("If-Match", "*");
-
-                using (var response = await HttpClientFactory.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,
-                    new CancellationToken()).ConfigureAwait(false))
-                {
-                    using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                    {
-                        if (!response.IsSuccessStatusCode) ThrowHelper.Throw(await stream.AsString(), response.StatusCode);
-
-                        if (_operationType == TableOperationType.Get)
-                        {
-                            return _entity.DeSerialize<T>(stream, response.StatusCode, response.Headers);
-                        }
-
-                        return new TableResult<T>(response.StatusCode);
-                    }
-                }
+                return _entity.DeSerialize<T>(result.ResponseStream, result.StatusCode);
             }
+
+            return new TableResult<T>(result.StatusCode);
+        }
+
+        internal async Task<TableQueryResult<T>> ExecuteQueryAsync<T>(TableCredentials credentials, TableStorageUri storageUri) where T : class
+        {
+            var result = await ExecuteAsyncInternal(credentials, storageUri);
+
+            return _entity.DeSerialize<T>(result.ResponseStream, GetPaginationToken(result.Headers));
         }
 
         internal static TableOperation Insert(ITableEntity entity) => new TableOperation(entity, TableOperationType.Insert);
@@ -89,5 +69,50 @@ namespace Azure.TableStorage
         internal static TableOperation Update(ITableEntity entity) => new TableOperation(entity, TableOperationType.Update);
 
         internal static TableOperation Delete(ITableEntity entity) => new TableOperation(entity, TableOperationType.Delete);
+
+        private async Task<TableResponse> ExecuteAsyncInternal(TableCredentials credentials, TableStorageUri storageUri)
+        {
+            var time = DateTimeOffset.UtcNow.UtcDateTime.ToString("R", CultureInfo.InvariantCulture);
+
+            using (var request = new HttpRequestMessage(HttpMethod, storageUri.BuildRequestUri(_tableUri)))
+            {
+                request.Headers.Add("x-ms-date", time);
+
+                request.Headers.Authorization = credentials.AuthorizationHeader(time, _tableUri.Url);
+
+                if (_operationType == TableOperationType.Insert || _operationType == TableOperationType.Update)
+                {
+                    request.Headers.Add("Prefer", "return-no-content");
+                    request.Content = _entity.Serialize();
+                }
+
+                if (_operationType == TableOperationType.Update || _operationType == TableOperationType.Delete)
+                    request.Headers.Add("If-Match", "*");
+
+                using (var response = await HttpClientFactory.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,
+                    new CancellationToken()).ConfigureAwait(false))
+                {
+                    using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    {
+                        if (!response.IsSuccessStatusCode) ThrowHelper.Throw(await stream.StringAsync(), response.StatusCode);
+
+                        if (_operationType == TableOperationType.Get)
+                            return new TableResponse(await stream.CopyAsync(), response.StatusCode, response.Headers);
+
+                        return new TableResponse(response.StatusCode);
+                    }
+                }
+            }
+        }
+
+        private static TablePaginationToken GetPaginationToken(HttpHeaders headers)
+        {
+            if (headers.Contains(TableConstants.NextPartitionKey) && headers.Contains(TableConstants.NextRowKey))
+            {
+                return new TablePaginationToken(headers);
+            }
+
+            return default;
+        }
     }
 }

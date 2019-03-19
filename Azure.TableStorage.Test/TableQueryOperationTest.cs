@@ -48,13 +48,13 @@ namespace Azure.TableStorage.Test
 
             do
             {
-                var result = await Client.QueryAsync<MessageEntityCollection>(entity, token, options);
+                var result = await Client.QueryAsync<MessageEntity>(entity, token, options);
 
-                entities.AddRange(result.Result.MessageEntityList);
+                entities.AddRange(result.Results);
 
                 token = result.TablePaginationToken;
 
-                if(result.Result.MessageEntityList.Count <= 10) break;
+                if(result.Results.Count <= 10) break;
 
             } while (token != null);
 
@@ -74,9 +74,9 @@ namespace Azure.TableStorage.Test
 
             do
             {
-                var result = await Client.QueryAsync<MessageEntityCollection>(entity, token, options);
+                var result = await Client.QueryAsync<MessageEntity>(entity, token, options);
 
-                entities.AddRange(result.Result.MessageEntityList);
+                entities.AddRange(result.Results);
 
                 token = result.TablePaginationToken;
 

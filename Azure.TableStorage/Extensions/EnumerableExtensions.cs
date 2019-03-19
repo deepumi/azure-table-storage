@@ -7,8 +7,8 @@ namespace Azure.TableStorage.Extensions
         internal static string First(this IEnumerable<string> source)
         {
             if (source == null) return string.Empty;
-
-            using (var e = source.GetEnumerator())
+             
+            using (IEnumerator<string> e = source.GetEnumerator())
             {
                 if (e.MoveNext())
                 {

@@ -14,22 +14,22 @@ namespace Azure.TableStorage
             _tableStorageUri = tableStorageUri;
         }
 
-        public Task<TableResult<T>> GetAsync<T>(ITableEntity entity) => TableOperation.Get(entity).ExecuteAsync<T>(_credentials, _tableStorageUri);
+        public Task<TableResult<T>> GetAsync<T>(ITableEntity entity) where T : class => TableOperation.Get(entity).ExecuteAsync<T>(_credentials, _tableStorageUri);
 
-        public Task<TableResult<T>> GetAsync<T>(ITableEntity entity, string selectProperties)
+        public Task<TableResult<T>> GetAsync<T>(ITableEntity entity, string selectProperties) where T : class
         {
             return TableOperation.Get(entity, new TableQueryOptions { SelectProperties = selectProperties }).ExecuteAsync<T>(_credentials, _tableStorageUri);
         }
-
-        public Task<TableResult<T>> QueryAsync<T>(ITableEntity entity, TablePaginationToken token, TableQueryOptions options)
+  
+        public Task<TableQueryResult<T>> QueryAsync<T>(ITableEntity entity, TablePaginationToken token, TableQueryOptions options) where T : class
         {
-            return TableOperation.Get(entity, options, token).ExecuteAsync<T>(_credentials, _tableStorageUri);
+            return TableOperation.Get(entity, options, token).ExecuteQueryAsync<T>(_credentials, _tableStorageUri);
         }
 
-        public Task<TableResult<T>> InsertAsync<T>(ITableEntity entity) => TableOperation.Insert(entity).ExecuteAsync<T>(_credentials, _tableStorageUri);
+        public Task<TableResult<T>> InsertAsync<T>(ITableEntity entity) where T : class => TableOperation.Insert(entity).ExecuteAsync<T>(_credentials, _tableStorageUri);
 
-        public Task<TableResult<T>> UpdateAsync<T>(ITableEntity entity) => TableOperation.Update(entity).ExecuteAsync<T>(_credentials, _tableStorageUri);
+        public Task<TableResult<T>> UpdateAsync<T>(ITableEntity entity) where T : class => TableOperation.Update(entity).ExecuteAsync<T>(_credentials, _tableStorageUri);
 
-        public Task<TableResult<T>> DeleteAsync<T>(ITableEntity entity) => TableOperation.Delete(entity).ExecuteAsync<T>(_credentials, _tableStorageUri);
+        public Task<TableResult<T>> DeleteAsync<T>(ITableEntity entity) where T : class => TableOperation.Delete(entity).ExecuteAsync<T>(_credentials, _tableStorageUri);
     }
 }
