@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 
 namespace Azure.TableStorage
 {
@@ -13,7 +12,9 @@ namespace Azure.TableStorage
 
         HttpContent Serialize();
 
-        TableResult<TResult> DeSerialize<TResult>(Stream stream, HttpStatusCode statusCode, HttpResponseHeaders headers);
+        TableResult<TResult> DeSerialize<TResult>(Stream stream, HttpStatusCode statusCode) where TResult : class; // GET 
+
+        TableQueryResult<TResult> DeSerialize<TResult>(Stream stream, TablePaginationToken paginationToken) where TResult : class; // Collection
 
         string TableName { get; }
     }
