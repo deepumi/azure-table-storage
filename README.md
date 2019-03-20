@@ -1,7 +1,7 @@
 # azure-table-storage
 SDK for azure table operations
 
-## Performance benchmark for 100 Get operation!
+## Performance benchmark for 100 Get operations!
 
 
 |      Method | Iteration |     Mean |    Error |   StdDev | Rank | Gen 0/1k Op | Gen 1/1k Op | Gen 2/1k Op | Allocated Memory/Op |
