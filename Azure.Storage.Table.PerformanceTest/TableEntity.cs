@@ -50,14 +50,9 @@ namespace Azure.Storage.Table.PerformanceTest
             }
         }
 
-        public HttpContent Serialize(IDictionary<string, object> edmTypeEntity = default)
+        public HttpContent Serialize(object entity)
         {
-            if (edmTypeEntity != null)
-            {
-                return new StringContent(JsonConvert.SerializeObject(edmTypeEntity, Formatting.None), Encoding.UTF8, "application/json");
-            }
-            
-            return new StringContent(JsonConvert.SerializeObject(this, Formatting.None), Encoding.UTF8, "application/json");
+            return new StringContent(JsonConvert.SerializeObject(entity, Formatting.None), Encoding.UTF8, "application/json");
         }
     }
 

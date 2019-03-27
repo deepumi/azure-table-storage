@@ -54,7 +54,7 @@ namespace Azure.Storage.Table
 
         internal async Task<TableResult<T>> ExecuteAsync<T>(TableCredentials credentials, TableStorageUri storageUri) where T : class
         {
-            var result = await ExecuteAsyncInternal(credentials, storageUri);
+            var result = await ExecutecInternalAsyn(credentials, storageUri);
 
             if (_operationType == TableOperationType.Get)
             {
@@ -66,7 +66,7 @@ namespace Azure.Storage.Table
 
         internal async Task<TableQueryResult<T>> ExecuteQueryAsync<T>(TableCredentials credentials, TableStorageUri storageUri) where T : class
         {
-            var result = await ExecuteAsyncInternal(credentials, storageUri);
+            var result = await ExecutecInternalAsyn(credentials, storageUri);
 
             return _entity.DeSerialize<T>(result.ResponseStream, GetPaginationToken(result.Headers));
         }
@@ -81,7 +81,7 @@ namespace Azure.Storage.Table
 
         internal static TableOperation Delete(ITableEntity entity) => new TableOperation(entity, TableOperationType.Delete);
 
-        private async Task<TableResponse> ExecuteAsyncInternal(TableCredentials credentials, TableStorageUri storageUri)
+        private async Task<TableResponse> ExecutecInternalAsyn(TableCredentials credentials, TableStorageUri storageUri)
         {
             var time = DateTimeOffset.UtcNow.UtcDateTime.ToString("R", CultureInfo.InvariantCulture);
 
@@ -93,27 +93,39 @@ namespace Azure.Storage.Table
 
                 if (_operationType == TableOperationType.Insert || _operationType == TableOperationType.InsertEdmType || _operationType == TableOperationType.Update)
                 {
-                    request.Headers.Add("Prefer", "return-no-content");
-                    request.Content = _entity.Serialize(_edmTypeEntity);
+                    request.Headers.Add("Prefer", TableConstants.ReturnNoContent);
+                    request.Content = _entity.Serialize(GetEntity());
                 }
 
                 if (_operationType == TableOperationType.Update || _operationType == TableOperationType.Delete)
                     request.Headers.Add("If-Match", "*");
-
-                using (var response = await HttpClientFactory.Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,
-                    new CancellationToken()).ConfigureAwait(false))
+                
+                using (var cts = new CancellationTokenSource(TableConstants.DefaultRequestTimeout))
                 {
-                    using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    using (var response = await HttpClientFactory.Client.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,
+                        cts.Token).ConfigureAwait(false))
                     {
-                        if (!response.IsSuccessStatusCode) ThrowHelper.Throw(await stream.StringAsync(), response.StatusCode);
+                        using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                        {
+                            if (!response.IsSuccessStatusCode)
+                                ThrowHelper.Throw(await stream.StringAsync(), response.StatusCode);
 
-                        if (_operationType == TableOperationType.Get)
-                            return new TableResponse(await stream.CopyAsync(), response.StatusCode, response.Headers);
+                            if (_operationType == TableOperationType.Get)
+                                return new TableResponse(await stream.CopyAsync(), response.StatusCode,
+                                    response.Headers);
 
-                        return new TableResponse(response.StatusCode);
+                            return new TableResponse(response.StatusCode);
+                        }
                     }
                 }
             }
+        }
+
+        private object GetEntity()
+        {
+            if (_edmTypeEntity != null) return _edmTypeEntity;
+
+            return _entity;
         }
 
         private static TablePaginationToken GetPaginationToken(HttpHeaders headers)

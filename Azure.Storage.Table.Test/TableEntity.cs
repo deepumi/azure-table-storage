@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -32,9 +31,7 @@ namespace Azure.Storage.Table.Test
                 {
                     var queryResult = _json.Deserialize<TableEntityCollection<TResult>>(reader);
 
-                    var x = queryResult.Results;
-
-                    return new TableQueryResult<TResult>(x, paginationToken);
+                    return new TableQueryResult<TResult>(queryResult?.Results, paginationToken);
                 }
             }
         }
@@ -52,14 +49,9 @@ namespace Azure.Storage.Table.Test
             }
         }
 
-        public HttpContent Serialize(IDictionary<string, object> edmTypeEntity = default)
+        public HttpContent Serialize(object entity)
         {
-            if (edmTypeEntity != null)
-            {
-                return new StringContent(JsonConvert.SerializeObject(edmTypeEntity), Encoding.UTF8, "application/json");
-            }
-
-            return new StringContent(JsonConvert.SerializeObject(this), Encoding.UTF8, "application/json");
+            return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
         }
     }
 }

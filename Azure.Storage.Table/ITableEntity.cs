@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Http;
 
@@ -11,7 +10,7 @@ namespace Azure.Storage.Table
 
         string RowKey { get; set; }
 
-        HttpContent Serialize(IDictionary<string, object> edmTypeEntity = default);
+        HttpContent Serialize(object entity);
 
         TableResult<TResult> DeSerialize<TResult>(Stream stream, HttpStatusCode statusCode) where TResult : class; // GET 
 

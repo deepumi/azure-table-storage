@@ -1,4 +1,6 @@
-﻿namespace Azure.Storage.Table
+﻿using System;
+
+namespace Azure.Storage.Table
 {
     internal static class TableConstants
     {
@@ -11,5 +13,9 @@
         internal const string NextPartitionKey = "x-ms-continuation-NextPartitionKey";
 
         internal const string NextRowKey = "x-ms-continuation-NextRowKey";
+
+        internal const string ReturnNoContent = "return-no-content";
+
+        internal static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromSeconds(30);
     }
 }
