@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -41,14 +42,14 @@ namespace Azure.Storage.Table.PerformanceTest.MicrosoftAzureStorage
             {
                 PartitionKey = Guid.NewGuid().ToString(),
                 RowKey = "azure",
-                DateProp = DateTimeOffset.UtcNow.DateTime
-                //ByteTest = Encoding.UTF8.GetBytes("Hello world"),
-                //DoubleProperty = 3.14,
-                //LongProperty = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                //IntProperty = 2300
+                DateProp = DateTimeOffset.UtcNow.DateTime,
+                DoubleProperty = 3.14,
+                LongProperty = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                IntProperty = 2300,
+                ByteTest = Encoding.UTF8.GetBytes("Hello world")
             };
 
-            var table = _tableClient.GetTableReference("edmnull");
+            var table = _tableClient.GetTableReference("edmMS1");
 
             var insertOperation = TableOperation.Insert(entity);
 
