@@ -19,7 +19,7 @@ Install [Azure.Storage.Table](https://www.nuget.org/packages/Azure.Storage.Table
 
 PM> Install-Package Azure.Storage.Table
 
-## All entites must implement IEntity interface. 
+## All entites must implement ITableEntity interface. 
 ```csharp
 public interface ITableEntity
 {
@@ -36,7 +36,7 @@ public interface ITableEntity
     string TableName { get; }
 }
 ```
-Since you have multipe entites, consumer app could have a abstract class which then implements the IEntity interface and resuse the serializers and De-serializers logic. Sample [TableEntity.cs](https://github.com/deepumi/azure-table-storage/blob/master/Azure.Storage.Table.Test/TableEntity.cs) class can grab from here. https://github.com/deepumi/azure-table-storage/blob/master/Azure.Storage.Table.Test/TableEntity.cs.
+Since you have multipe entites, consumer app could have a abstract class which then implements the ITableEntity interface and resuse the serializers and De-serializers logic. Sample [TableEntity.cs](https://github.com/deepumi/azure-table-storage/blob/master/Azure.Storage.Table.Test/TableEntity.cs) class can grab from here. https://github.com/deepumi/azure-table-storage/blob/master/Azure.Storage.Table.Test/TableEntity.cs.
 
  
 ## Sample
