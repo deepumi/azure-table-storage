@@ -31,66 +31,9 @@ public interface ITableEntity
     string TableName { get; }
 }
 ```
-Since you have multipe entites, consumer app could have a abstract class which then implements the IEntity interface and resuse the serializers and De-serializers logic
+Since you have multipe entites, consumer app could have a abstract class which then implements the IEntity interface and resuse the serializers and De-serializers logic. Sample [TableEntity.cs](https://github.com/deepumi/azure-table-storage/blob/master/Azure.Storage.Table.Test/TableEntity.cs) class can grab from here. https://github.com/deepumi/azure-table-storage/blob/master/Azure.Storage.Table.Test/TableEntity.cs.
 
-```csharp
-public abstract class TableEntity : ITableEntity
-{
-    private readonly JsonSerializer _json = new JsonSerializer();
-
-    public string PartitionKey { get; set; }
-
-    public string RowKey { get; set; }
-
-    [JsonIgnore]
-    public string TableName { get; } 
-
-    protected TableEntity() { }
-
-    internal TableEntity(string tableName) => TableName = tableName;
-
-    public TableQueryResult<TResult> DeSerialize<TResult>(Stream stream, TablePaginationToken paginationToken) where TResult : class
-    {
-        if (stream == null || !stream.CanRead) return null;
-
-        using (var sr = new StreamReader(stream, Encoding.UTF8))
-        {
-            using (var reader = new JsonTextReader(sr) { DateParseHandling = DateParseHandling.None })
-            {
-                var queryResult = _json.Deserialize<TableEntityCollection<TResult>>(reader);
-
-                return new TableQueryResult<TResult>(queryResult?.Results, paginationToken);
-            }
-        }
-    }
-
-    public TableResult<TResult> DeSerialize<TResult>(Stream stream, HttpStatusCode statusCode) where TResult : class
-    {
-        if (stream == null || !stream.CanRead) return null;
-
-        using (var reader = new StreamReader(stream))
-        {
-            using (var json = new JsonTextReader(reader) { DateParseHandling = DateParseHandling.None })
-            {
-                return new TableResult<TResult>(_json.Deserialize<TResult>(json), statusCode);
-            }
-        }
-    }
-
-    public HttpContent Serialize(object entity)
-    {
-        return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
-    }
-}
-
-//This class is required when you have to De-Serialize collection entities!
-public sealed class TableEntityCollection<T>
-{
-    [JsonProperty("value")]
-    public List<T> Results { get; set; }
-}
-```
-
+ 
 ## Sample
 
 ```csharp
