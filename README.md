@@ -14,6 +14,11 @@ A lightweight memory efficient SDK for Azure Storage Table operations. Following
 ## No Json Dependencies
 Azure.Storage.Table does not support any default json serializers. However, consumer app can specify its own json serializers implemention through public interfaces. 
 
+## Nuget
+Install [Azure.Storage.Table](https://www.nuget.org/packages/Azure.Storage.Table/) via [Nuget](https://www.nuget.org/packages/Azure.Storage.Table/)
+
+PM> Install-Package Azure.Storage.Table
+
 ## All entites must implement IEntity interface. 
 ```csharp
 public interface ITableEntity
@@ -49,16 +54,25 @@ public sealed class MessageEntity : TableEntity
 
 ### Setup table client connection.
 ```csharp
-internal static readonly TableClient Client = TableStorageAccount.Parse("").CreateTableClient(); //Pass table connection string.
+internal static readonly TableClient Client = TableStorageAccount.Parse("").CreateTableClient(); //Pass storage connection string.
 ```
-### Call insert operation.
+### Call Insert operation.
 ```csharp
-var entity = new MessageEntity { PartitionKey = _testPartitionKey.ToString(), RowKey = "demo", Message = "Integration test" };
+var entity = new MessageEntity { PartitionKey = Guid.NewGuid().ToString(), RowKey = "demo", Message = "Integration test" };
 
 var tableResult = await Client.InsertAsync<MessageEntity>(entity);
+
+var isSuccess = tableResult.IsSuccessStatusCode; //Return true if entity inserted successfully!
 ```
 
+### Call Get operation.
+```csharp
+var entity = new MessageEntity { PartitionKey = "", RowKey = "demo" };
 
+var tableResult = await Client.GetAsync<MessageEntity>(entity);
+
+var resukt = tableResult?.Result; //
+```
 
 ## Performance benchmark for 100 Get operations!
 
