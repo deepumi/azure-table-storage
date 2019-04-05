@@ -66,7 +66,7 @@ namespace Azure.Storage.Table.Test
 
                 token = result.TablePaginationToken;
 
-                if(result.Results.Count <= 10) break;
+                if (result.Results.Count <= 10) break;
 
             } while (token != null);
 
@@ -117,6 +117,117 @@ namespace Azure.Storage.Table.Test
             var tableResult = await Client.UpdateAsync<MessageEntity>(entity);
 
             Assert.IsTrue(tableResult.IsSuccessStatusCode);
+        }
+
+        [TestMethod]
+        public async Task FilterCondition_Single_Property_Test()
+        {
+            var token = default(TablePaginationToken);
+            var entity = new UserEntity();
+            var entities = new List<MessageEntity>();
+            var options = new TableQueryOptions
+            {
+                Filters = new[]
+                {
+                    new FilterCondition
+                    {
+                        Conditions = new[]
+                        {
+                            new CompareCondition("Email", CompareOperator.Equal, "Ben@contoso.com"),
+                        }
+                    }
+                }
+            };
+
+            do
+            {
+                var result = await Client.QueryAsync<MessageEntity>(entity, token, options);
+
+                entities.AddRange(result.Results);
+
+                token = result.TablePaginationToken;
+
+            } while (token != null);
+
+            Assert.IsTrue(entities.Count > 0);
+        }
+
+        [TestMethod]
+        public async Task FilterCondition_Two_Property_Test()
+        {
+            var token = default(TablePaginationToken);
+            var entity = new UserEntity();
+            var entities = new List<MessageEntity>();
+            var options = new TableQueryOptions
+            {
+                Filters = new[]
+                {
+                    new FilterCondition(FilterOperator.And)
+                    {
+                        Conditions = new[]
+                        {
+                            new CompareCondition("PartitionKey", CompareOperator.Equal, "Smith"),
+                            new CompareCondition("Email", CompareOperator.Equal, "Ben@contoso.com"),
+                        }
+                    }
+                }
+            };
+
+            do
+            {
+                var result = await Client.QueryAsync<MessageEntity>(entity, token, options);
+
+                entities.AddRange(result.Results);
+
+                token = result.TablePaginationToken;
+
+            } while (token != null);
+
+            Assert.IsTrue(entities.Count > 0);
+        }
+
+        [TestMethod]
+        public async Task FilterCondition_Complex_Test()
+        {
+            var token = default(TablePaginationToken);
+            var entity = new UserEntity();
+            var entities = new List<MessageEntity>();
+            var options = new TableQueryOptions
+            {
+                Filters = new[]
+                {
+                    new FilterCondition(FilterOperator.And)
+                    {
+                        Conditions = new[]
+                        {
+                            new CompareCondition("PartitionKey", CompareOperator.Equal, "Smith"),
+                            new CompareCondition("Email", CompareOperator.Equal, "Ben@contoso.com"),
+                        }
+                    },
+
+                    new FilterCondition(FilterOperator.Or),
+
+                    new FilterCondition
+                    {
+                        Conditions = new[]
+                        {
+                            new CompareCondition("phone", CompareOperator.Equal, "425-555-0102"),
+                        }
+                    }
+                }
+            };
+
+            do
+            {
+                var result = await Client.QueryAsync<MessageEntity>(entity, token, options);
+
+                entities.AddRange(result.Results);
+
+                token = result.TablePaginationToken;
+
+            } while (token != null);
+
+            Assert.IsTrue(entities.Count > 0);
         }
     }
 }

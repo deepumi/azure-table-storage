@@ -28,13 +28,13 @@ namespace Azure.Storage.Table
 
         private static TableConnectionEntry ParseConnectionString(string connectionString)
         {
-            var split = connectionString.Split(new char[1] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            var split = connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
             var entry = new TableConnectionEntry();
 
             for (var i = 0; i < split.Length; i++)
             {
-                var nvp = split[i].Split(new char[1] { '=' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                var nvp = split[i].Split(new[] { '=' }, 2, StringSplitOptions.RemoveEmptyEntries);
 
                 if (nvp.Length == 0) continue;
 
