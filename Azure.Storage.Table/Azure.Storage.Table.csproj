@@ -8,5 +8,11 @@
     <RepositoryUrl>https://github.com/deepumi/azure-table-storage</RepositoryUrl>
     <Description>A lightweight memory efficient SDK for Azure Storage Table operations. Please visit for more details https://github.com/deepumi/azure-table-storage</Description>
     <PackageTags>C#, Azure Table,Azure Storage Table</PackageTags>
+    <Authors>Deepu Madhusoodanan</Authors>
+    <Company />
+    <Copyright></Copyright>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageReleaseNotes>Initial release has all basic table operations. Please visit for more details https://github.com/deepumi/azure-table-storage</PackageReleaseNotes>
+    <RepositoryType>Netstandard 2.0</RepositoryType>
   </PropertyGroup>
 </Project>
