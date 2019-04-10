@@ -11,8 +11,10 @@
     <Authors>Deepu Madhusoodanan</Authors>
     <Company />
     <Copyright></Copyright>
-    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/deepumi/azure-table-storage/blob/master/LICENSE</PackageLicenseUrl>
     <PackageReleaseNotes>Initial release has all basic table operations. Please visit for more details https://github.com/deepumi/azure-table-storage</PackageReleaseNotes>
     <RepositoryType>Netstandard 2.0</RepositoryType>
+    <PackageId>D4.Azure.Storage.Table</PackageId>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 </Project>
