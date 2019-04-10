@@ -15,7 +15,7 @@ A lightweight memory efficient SDK for Azure Storage Table operations. Following
 Azure.Storage.Table does not support any default json serializers. However, consumer app can specify its own json serializers implemention through public interfaces. 
 
 ## Nuget
-Install [Azure.Storage.Table](https://www.nuget.org/packages/Azure.Storage.Table/) via [Nuget](https://www.nuget.org/packages/Azure.Storage.Table/)
+Install [D4.Azure.Storage.Table](https://www.nuget.org/packages/D4.Azure.Storage.Table/) via [Nuget](https://www.nuget.org/packages/D4.Azure.Storage.Table/)
 
 PM> Install-Package Azure.Storage.Table
 
