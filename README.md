@@ -17,7 +17,7 @@ Azure.Storage.Table does not support any default json serializers. However, cons
 ## Nuget
 Install [D4.Azure.Storage.Table](https://www.nuget.org/packages/D4.Azure.Storage.Table/) via [Nuget](https://www.nuget.org/packages/D4.Azure.Storage.Table/)
 
-PM> Install-Package Azure.Storage.Table
+PM> Install-Package D4.Azure.Storage.Table
 
 ## All entites must implement ITableEntity interface. 
 ```csharp
