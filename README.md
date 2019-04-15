@@ -1,4 +1,6 @@
 # Azure.Storage.Table
+[![Build Status](https://deepumi.visualstudio.com/azure-table-storage/_apis/build/status/azure-table-storage-CI?branchName=master)](https://deepumi.visualstudio.com/azure-table-storage/_build/latest?definitionId=6&branchName=master)
+
 A lightweight memory efficient SDK for Azure Storage Table operations. Following table operations are currently supported!
 
 |  API | Description
