@@ -3,6 +3,13 @@
 
 A lightweight memory efficient SDK for Azure Storage Table operations. Following table operations are currently supported!
 
+## Features
+
+* Support Custom Json Serialization / De-Serialization.
+* Less Memory Allocation.
+* Support .Net Core and .Net Full Framework.
+* Transient Exception handling.
+
 |  API | Description
 |---|---|
 |GetAsync<T>(ITableEntity entity)  | Get entity based on Partition key and Row key. Note: The method returns all the properties in the table which include TimeStamp, Partition key & Row key and other custom properties.|
@@ -13,7 +20,7 @@ A lightweight memory efficient SDK for Azure Storage Table operations. Following
 |UpdateAsync<T>(ITableEntity entity) | Update existing entity based on Partition key and Row key.|
 |DeleteAsync<T>(ITableEntity entity) | Delete existing entity based on Partition key and Row key.|
 
-## No Json Dependencies
+## Support Custom Json Serialization / De-Serialization
 Azure.Storage.Table does not support any default json serializers. However, consumer app can specify its own json serializers implemention through public interfaces. 
 
 ## Nuget
