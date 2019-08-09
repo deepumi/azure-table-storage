@@ -3,6 +3,11 @@
 
 A lightweight memory efficient SDK for Azure Storage Table operations. Following table operations are currently supported!
 
+## Nuget
+Install [D4.Azure.Storage.Table](https://www.nuget.org/packages/D4.Azure.Storage.Table/) via [Nuget](https://www.nuget.org/packages/D4.Azure.Storage.Table/)
+
+PM> Install-Package D4.Azure.Storage.Table
+
 ## Features
 
 * Support Custom Json Serialization / De-Serialization.
@@ -22,11 +27,6 @@ A lightweight memory efficient SDK for Azure Storage Table operations. Following
 
 ## Support Custom Json Serialization / De-Serialization
 Azure.Storage.Table does not support any default json serializers. However, consumer app can specify its own json serializers implemention through public interfaces. 
-
-## Nuget
-Install [D4.Azure.Storage.Table](https://www.nuget.org/packages/D4.Azure.Storage.Table/) via [Nuget](https://www.nuget.org/packages/D4.Azure.Storage.Table/)
-
-PM> Install-Package D4.Azure.Storage.Table
 
 ## All entites must implement ITableEntity interface. 
 ```csharp
